@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Citizen AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-700 p-4 text-white flex justify-center space-x-8">
+        <a href="/" class="hover:underline">Home</a>
+        <a href="/about" class="hover:underline">About</a>
+        <a href="/services" class="hover:underline">Services</a>
+        <a href="/contact" class="hover:underline">Contact</a>
+    </nav>
+    <div class="max-w-xl mx-auto mt-10 p-6 bg-white shadow-md rounded">
+        <h1 class="text-3xl font-bold mb-4">Citizen AI Assistant</h1>
+        <input id="question" type="text" class="w-full p-2 border rounded mb-4" placeholder="Ask a government-related question...">
+        <button onclick="askQuestion()" class="bg-blue-500 text-white px-4 py-2 rounded">Ask</button>
+        <div id="response" class="mt-4 text-gray-800"></div>
+    </div>
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById("question").value;
+            const responseDiv = document.getElementById("response");
+            responseDiv.textContent = "Loading...";
+            const res = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question })
+            });
+            const data = await res.json();
+            responseDiv.textContent = data.answer;
+        }
+    </script>
+</body>
+</html>
