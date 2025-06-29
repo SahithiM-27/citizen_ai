@@ -1,29 +1,20 @@
-# 🌐 CitizenAI — AI-Powered Citizen Support System
+# 🌐 Citizen AI App
 
-CitizenAI is a responsive AI web application that leverages **IBM Granite 3.3 2B Instruct** to assist users with chat-based solutions. It integrates modern frontend design with Flask-based backend logic and powerful AI inference through Hugging Face.
-
----
+Citizen AI is a Flask-based intelligent assistant designed to handle citizen concerns, provide services, and generate AI responses using the IBM Granite model.
 
 ## 🚀 Features
 
-- 🤖 AI Chatbot using IBM Granite model  
-- 🌐 Responsive HTML/CSS templates  
-- 🔐 Secure user login and feedback forms  
-- 📊 AI-powered dashboard with dynamic content  
-- 🔌 Hugging Face API integration (no credit card needed)  
-- 🧠 Instruction-following and multilingual support  
+* Chat interface powered by IBM Granite (Granite-3.3-2B-Instruct)
+* Responsive HTML templates (login, chat, dashboard, etc.)
+* Real-time AI text generation using Hugging Face API
+* Flask backend integration with dynamic rendering
+* Modular frontend with reusable components
 
----
+## 🛠 Technologies Used
 
-## 🧠 Model Information
-
-- **Model Name:** `ibm-granite/granite-3.3-2b-instruct`  
-- **Source:** [Hugging Face Model Page](https://huggingface.co/ibm-granite/granite-3.3-2b-instruct)  
-- **License:** Apache 2.0  
-- **Language Support:** English, Hindi, Telugu, Tamil + others  
-- **Purpose:** Instruction-following, reasoning, Q&A, summarization  
-
----
-
-## 📁 Project Structure
-
+* Python (Flask)
+* HTML5 + CSS3 (Bootstrap responsive design)
+* IBM Granite Model via Hugging Face
+* Hugging Face Transformers
+* Accelerate for model performance
+* dotenv for managing API secrets
