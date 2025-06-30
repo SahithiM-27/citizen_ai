@@ -1,48 +1,38 @@
-from flask import Flask, render_template, request, jsonify
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from flask import Flask, request, jsonify
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 
 app = Flask(__name__)
 
-model_path = "ibm-granite/granite-3.3-2b-instruct"
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# Load small model and tokenizer (gpt2 ~500MB)
+model_name = "gpt2"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
-tokenizer = AutoTokenizer.from_pretrained(model_path)
-model = AutoModelForCausalLM.from_pretrained(
-    model_path,
-    device_map="auto",
-    torch_dtype=torch.float32
-)
+@app.route("/chat", methods=["POST"])
+def chat():
+    # Get user input
+    data = request.get_json()
+    user_message = data.get("message", "")
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+    if not user_message:
+        return jsonify({"error": "No message provided"}), 400
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
-
-@app.route('/services')
-def services():
-    return render_template('services.html')
-
-@app.route('/contact')
-def contact():
-    return render_template('contact.html')
-
-@app.route('/ask', methods=['POST'])
-def ask():
-    user_input = request.json['question']
-    messages = [{"role": "user", "content": user_input}]
-    inputs = tokenizer.apply_chat_template(
-        messages, return_tensors="pt", return_dict=True,
-        thinking=True, add_generation_prompt=True
-    ).to(device)
-    output = model.generate(**inputs, max_new_tokens=512)
-    response = tokenizer.decode(
-        output[0, inputs["input_ids"].shape[1]:], skip_special_tokens=True
+    # Tokenize and generate response
+    inputs = tokenizer(user_message, return_tensors="pt")
+    outputs = model.generate(
+        **inputs,
+        max_length=100,
+        num_return_sequences=1,
+        do_sample=True,
+        temperature=0.7,
+        top_k=50,
+        top_p=0.95
     )
-    return jsonify({'answer': response})
+    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+    return jsonify({"reply": reply})
+
+# Run the Flask server
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
