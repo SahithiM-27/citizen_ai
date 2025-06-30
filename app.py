@@ -1,38 +1,42 @@
 from flask import Flask, request, jsonify
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+import requests
+import os
 
 app = Flask(__name__)
 
-# Load small model and tokenizer (gpt2 ~500MB)
-model_name = "gpt2"
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+# IBM Granite model on Hugging Face
+MODEL_API_URL = "https://api-inference.huggingface.co/models/ibm/granite-13b-chat-v2"
 
-@app.route("/chat", methods=["POST"])
+# You must set your Hugging Face token as an environment variable
+HF_TOKEN = os.getenv("HF_TOKEN")
+
+headers = {
+    "Authorization": f"Bearer {HF_TOKEN}"
+}
+
+@app.route('/chat', methods=['POST'])
 def chat():
-    # Get user input
     data = request.get_json()
-    user_message = data.get("message", "")
+    user_input = data.get("message", "")
 
-    if not user_message:
+    if not user_input:
         return jsonify({"error": "No message provided"}), 400
 
-    # Tokenize and generate response
-    inputs = tokenizer(user_message, return_tensors="pt")
-    outputs = model.generate(
-        **inputs,
-        max_length=100,
-        num_return_sequences=1,
-        do_sample=True,
-        temperature=0.7,
-        top_k=50,
-        top_p=0.95
+    # Call Hugging Face API
+    response = requests.post(
+        MODEL_API_URL,
+        headers=headers,
+        json={"inputs": user_input}
     )
-    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-    return jsonify({"reply": reply})
+    if response.status_code != 200:
+        return jsonify({"error": "Model API failed", "details": response.text}), 500
 
-# Run the Flask server
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    model_output = response.json()
+    generated_text = model_output[0]["generated_text"]
+
+    return jsonify({"reply": generated_text})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
